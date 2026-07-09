@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cruz y Valencia - Operaciones e Importaciones Suite</title>
+    <!-- Tailwind CSS para diseño moderno de alta gama -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconografía profesional -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Librerías para PDF, Procesamiento de Documentos y Gráficos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            50: '#fbf7ee',
+                            100: '#f5ebd2',
+                            200: '#ebd3a3',
+                            300: '#ddb56c',
+                            400: '#cf943c',
+                            500: '#c17a22',
+                            600: '#a35f1a',
+                            700: '#834717',
+                            800: '#6a3918',
+                            950: '#1e0c03',
+                        },
+                        charcoal: {
+                            800: '#1e2022',
+                            900: '#121416',
+                            950: '#0a0b0d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121416;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #0a0b0d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cf943c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a35f1a;
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col antialiased">
+
+    <!-- PANTALLA DE INICIO DE SESIÓN SEGURA -->
+    <div id="login-screen" class="fixed inset-0 z-[150] bg-slate-100 dark:bg-charcoal-950 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold-100/30 dark:from-gold-950/20 via-slate-100 dark:via-charcoal-950 to-slate-100 dark:to-charcoal-950"></div>
+        
+        <div class="relative w-full max-w-md bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-gold-800/40 rounded-2xl p-8 shadow-2xl text-center space-y-6">
+            <div class="mx-auto h-16 w-16 rounded-full border border-gold-400 flex items-center justify-center bg-gold-50 dark:bg-gold-950/40">
+                <span class="font-serif text-2xl text-gold-500 dark:text-gold-400 font-bold">C&V</span>
+            </div>
+            
+            <div class="space-y-2">
+                <h2 class="font-serif text-2xl text-slate-900 dark:text-gold-100 font-bold">Suite Comercial Privada</h2>
+                <p class="text-xs text-gold-600 dark:text-gold-400/80 tracking-widest uppercase font-semibold">Cruz & Valencia • Acceso Restringido</p>
+            </div>
+
+            <div class="space-y-4 pt-4">
+                <div class="space-y-1.5 text-left">
+                    <label class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Contraseña de Dirección</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-3 text-slate-400 dark:text-slate-500"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="login-password" placeholder="Ingrese PIN de seguridad" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg py-2.5 pl-10 pr-3 text-slate-900 dark:text-slate-200 text-center text-sm focus:outline-none focus:border-gold-500 tracking-widest font-bold">
+                    </div>
+                </div>
+                
+                <button onclick="attemptLogin()" class="w-full bg-gold-500 hover:bg-gold-600 text-white dark:text-slate-950 font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-key"></i> Autorizar Acceso
+                </button>
+                <p id="login-error" class="text-red-500 text-xs hidden font-medium"><i class="fa-solid fa-circle-exclamation mr-1"></i> Contraseña incorrecta, intente nuevamente.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DE LA SUITE -->
+    <div id="main-app-content" class="hidden h-full flex flex-col overflow-hidden">
+        
+        <!-- HEADER CORPORATIVO -->
+        <header class="bg-white dark:bg-charcoal-900 border-b border-slate-200 dark:border-gold-800/30 px-6 py-4 flex flex-col lg:flex-row justify-between items-center gap-4 shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="h-12 w-12 rounded-full border border-gold-400 flex items-center justify-center bg-gold-50 dark:bg-gold-950/40">
+                    <span class="font-serif text-xl text-gold-500 dark:text-gold-400 font-bold">C&V</span>
+                </div>
+                <div>
+                    <h1 class="font-serif text-2xl tracking-wide text-slate-900 dark:text-gold-100 font-bold">CRUZ & VALENCIA</h1>
+                    <p class="text-xs text-gold-600 dark:text-gold-400/80 tracking-widest uppercase">Niche Perfumery • Suite de Control Financiero y Logística</p>
+                </div>
+            </div>
+            
+            <!-- PESTAÑAS PRINCIPALES DEL MENÚ -->
+            <div class="flex flex-wrap items-center bg-slate-100 dark:bg-slate-950 rounded-xl p-1 border border-slate-200 dark:border-slate-800">
+                <button onclick="switchMainTab('registro')" id="btn-tab-registro" class="px-4 py-2 rounded-lg text-xs font-bold transition-all bg-gold-500 text-white dark:text-slate-950 shadow flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Registro de Importaciones
+                </button>
+                <button onclick="switchMainTab('simulador')" id="btn-tab-simulador" class="px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i> Simulador de Precios
+                </button>
+                <button onclick="switchMainTab('pagos')" id="btn-tab-pagos" class="px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-check"></i> Programación de Pagos
+                </button>
+            </div>
+
+            <!-- ACCIONES DE HEADER (TEMA & SESIÓN) -->
+            <div class="flex items-center gap-3">
+                <!-- Selector Modo Claro / Oscuro -->
+                <button onclick="toggleTheme()" class="h-9 w-9 rounded-lg bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-gold-400 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-900 transition-all" title="Cambiar Tema">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+
+                <span class="bg-gold-50 dark:bg-gold-950/60 border border-gold-300 dark:border-gold-500/30 text-gold-600 dark:text-gold-300 text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved"></i> Conexión Encriptada
+                </span>
+                <button onclick="logout()" class="text-xs bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 px-3 py-1.5 rounded-lg transition-all">
+                    <i class="fa-solid fa-right-from-bracket"></i> Bloquear
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENIDO FLUIDO DEL WORKSPACE -->
+        <div class="flex-1 overflow-y-auto p-4 lg:p-6 bg-slate-50 dark:bg-slate-950">
+            <div class="max-w-7xl mx-auto space-y-6">
+
+                <!-- TOAST / NOTIFICACIONES -->
+                <div id="notification" class="hidden fixed bottom-6 right-6 z-50 bg-white dark:bg-charcoal-900 border border-gold-400 text-slate-800 dark:text-slate-100 px-6 py-4 rounded-xl shadow-2xl items-center gap-3 transition-all duration-300 transform translate-y-10">
+                    <span id="notification-icon" class="text-gold-500"></span>
+                    <div>
+                        <h4 id="notification-title" class="font-bold text-xs uppercase tracking-wider text-gold-500">Notificación</h4>
+                        <p id="notification-message" class="text-xs text-slate-600 dark:text-slate-300"></p>
+                    </div>
+                </div>
+
+                <!-- ================== VISTA 1: REGISTRO DE IMPORTACIONES ================== -->
+                <div id="view-registro-importaciones" class="space-y-6 block">
+                    
+                    <!-- KPI DASHBOARD ORIGINAL -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Total FOB Origen</span>
+                            <span id="kpi-fob" class="text-lg font-extrabold text-gold-500 dark:text-gold-400 mt-1">$0</span>
+                        </div>
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Flete Internacional</span>
+                            <span id="kpi-flete" class="text-lg font-extrabold text-slate-700 dark:text-slate-300 mt-1">$0</span>
+                        </div>
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Arancel Aduana</span>
+                            <span id="kpi-arancel" class="text-lg font-extrabold text-slate-700 dark:text-slate-300 mt-1">$0</span>
+                        </div>
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">IVA Diferido</span>
+                            <span id="kpi-iva" class="text-lg font-extrabold text-slate-700 dark:text-slate-300 mt-1">$0</span>
+                        </div>
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Costo Unitario Promedio</span>
+                            <span id="kpi-cost-unit" class="text-lg font-extrabold text-gold-500 dark:text-gold-400 mt-1">$0</span>
+                        </div>
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800/80 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Flujo de Caja Mínimo</span>
+                            <span id="kpi-caja" class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">$0</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <!-- Columna Izquierda: Entradas de Costos (8 Cols) -->
+                        <div class="lg:col-span-8 space-y-6">
+                            
+                            <!-- PASO 1: REGISTRO DE FACTURA & OCR -->
+                            <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-gold-500 dark:text-gold-400 text-lg"><i class="fa-solid fa-robot"></i></span>
+                                        <h3 class="font-serif text-lg text-slate-900 dark:text-gold-100 font-bold">Paso 1: Módulo de Factura (EXW)</h3>
+                                    </div>
+                                    <input type="password" id="gemini-api-key" placeholder="API Key de Gemini (Opcional)" class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-gold-500">
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Proveedor / Marca</label>
+                                        <input type="text" id="import-provider" value="Marca de Nicho Premium" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Divisa Comercial</label>
+                                        <select id="import-currency" onchange="updateCurrencyDefaults()" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                            <option value="EUR">Euro (€)</option>
+                                            <option value="USD">Dólar ($)</option>
+                                            <option value="CLP">Peso Chileno ($)</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Tasa de Cambio (CLP)</label>
+                                        <input type="number" id="import-exchange-rate" value="1015" oninput="calculateImport()" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                    </div>
+                                </div>
+
+                                <!-- Lector PDF Drag & Drop -->
+                                <div id="pdf-drag-zone" class="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-gold-500 rounded-xl p-8 text-center cursor-pointer transition-colors bg-slate-50 dark:bg-slate-950 relative mb-6">
+                                    <input type="file" id="pdf-file-input" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer">
+                                    <div id="drag-zone-idle" class="space-y-2">
+                                        <span class="text-3xl text-gold-500 dark:text-gold-400 block"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                                        <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">Sube o arrastra la factura comercial en PDF</p>
+                                        <p class="text-xs text-slate-500">Lector inteligente OCR de productos, cantidades y precios CIF/EXW</p>
+                                    </div>
+                                    <div id="drag-zone-loading" class="hidden space-y-3">
+                                        <span class="text-3xl text-gold-500 dark:text-gold-400 block animate-spin"><i class="fa-solid fa-circle-notch"></i></span>
+                                        <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">Analizando factura y extrayendo ítems originales...</p>
+                                        <div class="w-48 mx-auto bg-slate-200 dark:bg-slate-800 rounded-full h-1">
+                                            <div id="pdf-progress-bar" class="bg-gold-500 h-1 rounded-full transition-all duration-300" style="width: 20%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Esquema de Precios FOB -->
+                                <div class="flex items-center justify-between p-3.5 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 mb-4">
+                                    <div>
+                                        <h4 class="text-xs font-bold uppercase tracking-wider text-gold-500 dark:text-gold-400">Esquema de Precios FOB</h4>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">Establece si todos los perfumes tienen el mismo valor o varían por línea.</p>
+                                    </div>
+                                    <div class="inline-flex rounded-lg bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 p-0.5">
+                                        <button id="mode-single-btn" onclick="togglePricingMode(true)" class="text-xs px-3 py-1.5 rounded-md font-bold transition-all bg-gold-500 text-white dark:text-slate-950 shadow">Mismo Precio</button>
+                                        <button id="mode-mixed-btn" onclick="togglePricingMode(false)" class="text-xs px-3 py-1.5 rounded-md font-bold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">Precios Mixtos</button>
+                                    </div>
+                                </div>
+
+                                <!-- Input Mismo Precio -->
+                                <div id="input-single-container" class="space-y-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                                        <div class="space-y-1.5">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">Línea de Perfume / Descripción</label>
+                                            <input type="text" id="single-desc" value="Colección Perfumería de Nicho EDP 100ml" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">Unidades de la Orden</label>
+                                            <input type="number" id="single-qty" value="162" oninput="calculateImport()" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500 font-bold">
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">Costo FOB Unitario <span class="currency-label">EUR (€)</span></label>
+                                            <input type="number" step="0.01" id="single-unit-fob" value="37.14" oninput="calculateImport()" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500 font-bold">
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center text-xs text-slate-500 px-1">
+                                        <span>Subtotal FOB de Importación:</span>
+                                        <span id="single-total-fob" class="font-bold text-gold-500 dark:text-gold-400">€ 6,016.68</span>
+                                    </div>
+                                </div>
+
+                                <!-- Input Precios Mixtos -->
+                                <div id="input-mixed-container" class="space-y-4 hidden">
+                                    <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                                        <table class="w-full text-left text-xs border-collapse">
+                                            <thead>
+                                                <tr class="border-b border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400">
+                                                    <th class="p-3 font-semibold">Línea / SKU de Fragancia</th>
+                                                    <th class="p-3 font-semibold text-center w-24">Cantidad</th>
+                                                    <th class="p-3 font-semibold text-right w-36">FOB Unitario <span class="currency-label">(€)</span></th>
+                                                    <th class="p-3 font-semibold text-right w-32">Subtotal</th>
+                                                    <th class="p-3 font-semibold text-center w-12"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="mixed-products-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <button onclick="addMixedProductRow()" class="text-xs border border-dashed border-gold-500/40 hover:border-gold-400 text-gold-500 dark:text-gold-400 px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-2 bg-gold-50 dark:bg-gold-950/20">
+                                            <i class="fa-solid fa-plus"></i> Añadir Fragancia
+                                        </button>
+                                        <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                            Suma FOB Consolidada: <span id="mixed-total-fob" class="font-bold text-gold-500 dark:text-gold-400 ml-1">€ 0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PASO 2: LOGÍSTICA & IMPUESTOS ADUANEROS -->
+                            <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+                                <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                                    <span class="text-gold-500 dark:text-gold-400 text-lg"><i class="fa-solid fa-truck-container"></i></span>
+                                    <h3 class="font-serif text-lg text-slate-900 dark:text-gold-100 font-bold">Paso 2: Costos de Internación & Logística</h3>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Flete Internacional <span class="currency-label">(€)</span></label>
+                                        <input type="number" id="cost-flete" value="650" oninput="calculateImport()" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Seguro Internacional <span class="currency-label">(€)</span></label>
+                                        <input type="number" id="cost-seguro" value="50" oninput="calculateImport()" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Arancel Ad-Valorem (%)</label>
+                                        <div class="flex gap-2">
+                                            <input type="number" id="cost-arancel-pct" value="0" oninput="calculateImport()" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                            <button onclick="quickSetArancel(0)" class="text-[10px] font-bold bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 px-2 rounded border border-slate-300 dark:border-slate-700">TLC (0%)</button>
+                                            <button onclick="quickSetArancel(6)" class="text-[10px] font-bold bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 px-2 rounded border border-slate-300 dark:border-slate-700">6%</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-850 space-y-4">
+                                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-850 pb-2">
+                                        <h4 class="text-xs font-bold uppercase tracking-wider text-gold-500 dark:text-gold-400">Gastos Locales y Trámites ISP (CLP)</h4>
+                                        <span class="text-[10px] text-slate-500">Costos fijos nacionales</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">Inscripción ISP</label>
+                                            <input type="number" id="local-isp-insc" value="120000" oninput="calculateImport()" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">ISP CDA (Destinación)</label>
+                                            <input type="number" id="local-isp-cda" value="85000" oninput="calculateImport()" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">ISP Uso y Disposición</label>
+                                            <input type="number" id="local-isp-uyd" value="145000" oninput="calculateImport()" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">Honorarios Agente</label>
+                                            <input type="number" id="local-agente" value="380000" oninput="calculateImport()" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">Asesor Químico</label>
+                                            <input type="number" id="local-quimico" value="250000" oninput="calculateImport()" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] uppercase font-bold text-slate-500">Otros Locales</label>
+                                            <input type="number" id="local-otros" value="150000" oninput="calculateImport()" class="w-full bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Columna Derecha: Resumen de Costeo (4 Cols) -->
+                        <div class="lg:col-span-4 space-y-6">
+                            
+                            <!-- DETALLE DE INTERNACIÓN -->
+                            <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-gold-800/40 rounded-2xl p-6 shadow-md relative overflow-hidden">
+                                <div class="absolute -right-12 -top-12 w-44 h-44 bg-gold-500/5 rounded-full blur-2xl"></div>
+                                <h3 class="font-serif text-lg text-gold-600 dark:text-gold-400 font-bold mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">Resumen de Costeo de Internación</h3>
+                                
+                                <div class="space-y-3.5 text-xs">
+                                    <div class="flex justify-between text-slate-500 dark:text-slate-400">
+                                        <span>Valor FOB Total:</span>
+                                        <span id="summary-fob" class="font-semibold text-slate-800 dark:text-slate-200">$0</span>
+                                    </div>
+                                    <div class="flex justify-between text-slate-500 dark:text-slate-400">
+                                        <span>CIF Aduanero (Frontera):</span>
+                                        <span id="summary-cif" class="font-semibold text-slate-800 dark:text-slate-200">$0</span>
+                                    </div>
+                                    <div class="flex justify-between text-slate-500 dark:text-slate-400">
+                                        <span>Gravamen Aduana (Ad-Valorem):</span>
+                                        <span id="summary-arancel-clp" class="font-semibold text-slate-800 dark:text-slate-200">$0</span>
+                                    </div>
+                                    <div class="flex justify-between text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                                        <span>Gastos Locales y Trámites ISP:</span>
+                                        <span id="summary-locals-clp" class="font-semibold text-slate-800 dark:text-slate-200">$0</span>
+                                    </div>
+
+                                    <div class="flex justify-between items-center py-2">
+                                        <div>
+                                            <span class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">Inversión Real Total (Landed)</span>
+                                            <p class="text-[9px] text-slate-400 mt-0.5">(Costo Neto sin IVA)</p>
+                                        </div>
+                                        <span id="summary-landed-neto" class="text-xl font-bold text-gold-500 dark:text-gold-400">$0</span>
+                                    </div>
+
+                                    <div class="p-3 bg-slate-50 dark:bg-slate-950/80 rounded-lg border border-slate-200 dark:border-slate-850 flex justify-between text-slate-500 dark:text-slate-400">
+                                        <span>IVA Operación Aduanas (19%):</span>
+                                        <span id="summary-iva-clp" class="font-bold text-slate-700 dark:text-slate-200">$0</span>
+                                    </div>
+                                    <div class="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-lg flex justify-between text-slate-600 dark:text-slate-400">
+                                        <span class="font-bold text-emerald-600 dark:text-emerald-400">Flujo Caja Mínimo (Landed + IVA):</span>
+                                        <span id="summary-caja-requerida" class="font-bold text-emerald-600 dark:text-emerald-400">$0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ACCIONES PRINCIPALES DEL GESTOR -->
+                            <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-3.5">
+                                <h4 class="font-serif text-sm text-slate-900 dark:text-gold-100 font-bold border-b border-slate-100 dark:border-slate-800 pb-2">Acciones del Gestor</h4>
+                                
+                                <button onclick="generateAuditPDF()" class="w-full bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-900 text-gold-600 dark:text-gold-400 border border-gold-400/40 hover:border-gold-500 font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs">
+                                    <i class="fa-solid fa-file-pdf"></i> Descargar Certificado de Auditoría
+                                </button>
+                                <button onclick="saveSimulation()" class="w-full bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:border-slate-300 font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Guardar en Historial de Embarques
+                                </button>
+                                
+                                <button onclick="transferirASimulador()" class="w-full bg-gold-500 hover:bg-gold-600 text-white dark:text-slate-950 font-extrabold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                                    <span>Simular Estrategia de Precios</span> <i class="fa-solid fa-circle-arrow-right"></i>
+                                </button>
+                            </div>
+
+                            <!-- GRÁFICO DE INTERNACIÓN -->
+                            <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                                <h4 class="font-serif text-sm text-slate-900 dark:text-gold-100 font-bold mb-4">Estructura Real de Inversión</h4>
+                                <div class="relative h-44">
+                                    <canvas id="cost-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- PASO 3: TABLA DE PRORRATEO -->
+                    <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-gold-500 dark:text-gold-400 text-lg"><i class="fa-solid fa-calculator"></i></span>
+                                <h3 class="font-serif text-lg text-slate-900 dark:text-gold-100 font-bold">Paso 3: Distribución Real de Costos (Prorrateado)</h3>
+                            </div>
+                            <button onclick="exportToCSV()" class="bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-excel"></i> Descargar Excel de Distribución
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400">
+                                        <th class="p-4 font-semibold">Fragancia / Producto</th>
+                                        <th class="p-4 font-semibold text-center w-24">Cantidad</th>
+                                        <th class="p-4 font-semibold text-right">FOB Unitario</th>
+                                        <th class="p-4 font-semibold text-right">FOB Total CLP</th>
+                                        <th class="p-4 font-semibold text-right">% Prorrateo</th>
+                                        <th class="p-4 font-semibold text-right text-gold-500 dark:text-gold-400">Costo Landed Neto Unitario</th>
+                                        <th class="p-4 font-semibold text-right text-gold-500 dark:text-gold-400">Costo Landed Total CLP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prorrateo-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- HISTORIAL DE EMBARQUES -->
+                    <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                        <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-gold-500 dark:text-gold-400 text-lg"><i class="fa-solid fa-box-archive"></i></span>
+                                <h3 class="font-serif text-lg text-slate-900 dark:text-gold-100 font-bold">Historial de Embarques Guardados</h3>
+                            </div>
+                            <button onclick="clearAllSimulations()" class="text-xs bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/40 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 px-3 py-1 rounded-lg transition-all">
+                                <i class="fa-solid fa-trash-can mr-1"></i> Borrar Historial
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400">
+                                        <th class="p-4 font-semibold">Fecha Registro</th>
+                                        <th class="p-4 font-semibold">Proveedor</th>
+                                        <th class="p-4 font-semibold text-center">Uds Totales</th>
+                                        <th class="p-4 font-semibold text-right">FOB CLP</th>
+                                        <th class="p-4 font-semibold text-right text-gold-500 dark:text-gold-400">Landed Neto CLP</th>
+                                        <th class="p-4 font-semibold text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historial-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ================== VISTA 2: SIMULADOR DE PRECIOS ================== -->
+                <div id="view-simulador-precios" class="space-y-6 hidden">
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        <!-- Columna Izquierda: Estrategia de Canales -->
+                        <div class="lg:col-span-8 space-y-6">
+                            
+                            <!-- ESTRATEGIA DE CANALES -->
+                            <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+                                <div class="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                                    <span class="text-gold-500 dark:text-gold-400 text-lg"><i class="fa-solid fa-sliders"></i></span>
+                                    <h3 class="font-serif text-lg text-slate-900 dark:text-gold-100 font-bold">Estrategia de Canales de Venta & Márgenes</h3>
+                                </div>
+
+                                <div class="p-4 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-850 flex justify-between items-center shadow-inner">
+                                    <span class="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Costo Landed Unitario Promedio</span>
+                                    <span id="sim-costo-base-promedio" class="text-lg font-bold text-gold-500 dark:text-gold-400">$0</span>
+                                </div>
+
+                                <!-- CANAL B2C -->
+                                <div class="space-y-3 bg-slate-50 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-850/80">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> B2C - Público Final (PVP)
+                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="input-b2c-margin" min="10" max="90" step="0.5" value="55" oninput="syncMargin('b2c', this.value, 'input')" class="w-16 text-center text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded py-0.5 text-slate-900 dark:text-slate-100">%
+                                            <span id="label-b2c-margin" class="text-[10px] bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-full font-bold">55% Margen</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between text-xs text-slate-500">
+                                            <span>Margen Objetivo Sugerido</span>
+                                            <span id="lbl-b2c-suggest" class="font-bold text-slate-400">PVP Promedio: $0</span>
+                                        </div>
+                                        <input type="range" id="slider-b2c-margin" min="10" max="90" value="55" oninput="syncMargin('b2c', this.value, 'slider')" class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                                    </div>
+                                    <div class="space-y-1.5 pt-1 border-t border-slate-200 dark:border-slate-900">
+                                        <label class="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold">Ingreso Manual de PVP (con IVA)</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-slate-400 text-xs">$</span>
+                                            <input type="number" id="input-b2c-pvp-manual" oninput="syncPVP('b2c', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-2 pl-7 pr-3 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-gold-500 font-semibold">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 text-xs pt-2 border-t border-slate-200 dark:border-slate-900/40">
+                                        <div>
+                                            <span class="text-slate-500 block">PVP Bruto Promedio (c/IVA):</span>
+                                            <span id="res-b2c-bruto" class="font-bold text-slate-700 dark:text-slate-200">$0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-500 block">Utilidad Promedio / Unidad:</span>
+                                            <span id="res-b2c-utilidad" class="font-bold text-emerald-600 dark:text-emerald-400">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CANAL B2B Nivel 1 -->
+                                <div class="space-y-3 bg-slate-50 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-850/80">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> B2B Nivel 1 - Mayorista Estándar
+                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="input-b2b1-discount" min="5" max="80" step="0.5" value="35" oninput="syncDiscount('b2b1', this.value, 'input')" class="w-16 text-center text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded py-0.5 text-slate-900 dark:text-slate-100">%
+                                            <span id="label-b2b1-discount" class="text-[10px] bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full font-bold">35% Descuento</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between text-xs text-slate-500">
+                                            <span>Porcentaje de Descuento sobre PVP</span>
+                                            <span id="lbl-b2b1-eq" class="font-bold text-slate-400">Paso 1: Aplicar Descuento</span>
+                                        </div>
+                                        <input type="range" id="slider-b2b1-discount" min="5" max="80" value="35" oninput="syncDiscount('b2b1', this.value, 'slider')" class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                                    </div>
+                                    <div class="space-y-1.5 pt-1 border-t border-slate-200 dark:border-slate-900">
+                                        <label class="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold">Ingreso Manual Mayorista Estándar (con IVA)</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-slate-400 text-xs">$</span>
+                                            <input type="number" id="input-b2b1-pvp-manual" oninput="syncManualPrice('b2b1', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-2 pl-7 pr-3 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-gold-500 font-semibold">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Desglose de 4 pasos para B2B 1 -->
+                                    <div class="bg-slate-100 dark:bg-slate-900/60 p-3 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                                        <div>
+                                            <span class="text-slate-500 text-[10px] block uppercase font-bold">Paso 2: Bruto (+19% IVA)</span>
+                                            <span id="res-b2b1-bruto" class="font-bold text-slate-700 dark:text-slate-200">$0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-500 text-[10px] block uppercase font-bold">Paso 3: Neto (Bruto/1.19)</span>
+                                            <span id="res-b2b1-neto" class="font-bold text-slate-700 dark:text-slate-200">$0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-500 text-[10px] block uppercase font-bold">Paso 4: Utilidad Neta</span>
+                                            <span id="res-b2b1-utilidad" class="font-bold text-blue-600 dark:text-blue-400">$0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-500 text-[10px] block uppercase font-bold">Margen Equivalente</span>
+                                            <span id="res-b2b1-margin-eq" class="font-bold text-slate-600 dark:text-slate-300">0.0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CANAL B2B Nivel 2 -->
+                                <div class="space-y-3 bg-slate-50 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-850/80">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> B2B Nivel 2 - Mayorista Preferente
+                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="input-b2b2-discount" min="5" max="80" step="0.5" value="40" oninput="syncDiscount('b2b2', this.value, 'input')" class="w-16 text-center text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded py-0.5 text-slate-900 dark:text-slate-100">%
+                                            <span id="label-b2b2-discount" class="text-[10px] bg-purple-100 dark:bg-purple-950/80 text-purple-400 px-2.5 py-0.5 rounded-full font-bold">40% Descuento</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between text-xs text-slate-500">
+                                            <span>Porcentaje de Descuento sobre PVP</span>
+                                            <span id="lbl-b2b2-eq" class="font-bold text-slate-400">Paso 1: Aplicar Descuento</span>
+                                        </div>
+                                        <input type="range" id="slider-b2b2-discount" min="5" max="80" value="40" oninput="syncDiscount('b2b2', this.value, 'slider')" class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500">
+                                    </div>
+                                    <div class="space-y-1.5 pt-1 border-t border-slate-200 dark:border-slate-900">
+                                        <label class="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold">Ingreso Manual Mayorista Preferente (con IVA)</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-slate-400 text-xs">$</span>
+                                            <input type="number" id="input-b2b2-pvp-manual" oninput="syncManualPrice('b2b2', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-2 pl-7 pr-3 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-gold-500 font-semibold">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Desglose de 4 pasos para B2B 2 -->
+                                    <div class="bg-slate-100 dark:bg-slate-900/60 p-3 rounded-lg grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                                        <div>
+                                            <span class="text-slate-500 text-[10px] block uppercase font-bold">Paso 2: Bruto (+19% IVA)</span>
+                                            <span id="res-b2b2-bruto" class="font-bold text-slate-700 dark:text-slate-200">$0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-500 text-[10px] block uppercase font-bold">Paso 3: Neto (Bruto/1.19)</span>
+                                            <span id="res-b2b2-neto" class="font-bold text-slate-700 dark:text-slate-200">$0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-500 text-[10px] block uppercase font-bold">Paso 4: Utilidad Neta</span>
+                                            <span id="res-b2b2-utilidad" class="font-bold text-purple-600 dark:text-purple-400">$0</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-500 text-[10px] block uppercase font-bold">Margen Equivalente</span>
+                                            <span id="res-b2b2-margin-eq" class="font-bold text-slate-600 dark:text-slate-300">0.0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TABLA DE DESGLOSE COMERCIAL -->
+                            <div id="sim-product-breakdown-card" class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gold-500 dark:text-gold-400 text-md"><i class="fa-solid fa-list-check"></i></span>
+                                        <h4 class="font-serif text-md text-slate-900 dark:text-gold-100 font-bold">Desglose Comercial por Producto</h4>
+                                    </div>
+                                    <div class="flex items-center gap-3 flex-wrap">
+                                        <button onclick="clearSimProductOverrides()" class="text-[10px] text-red-500 hover:text-red-400 font-semibold flex items-center gap-1 transition-colors">
+                                            <i class="fa-solid fa-arrow-rotate-left"></i> Restablecer PVP Manuales
+                                        </button>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">Ver Canal:</span>
+                                            <select id="sim-breakdown-channel" onchange="renderSimBreakdownTable()" class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1 text-xs text-slate-800 dark:text-slate-300 focus:outline-none focus:border-gold-500">
+                                                <option value="b2c">B2C - Público Final</option>
+                                                <option value="b2b1">B2B 1 - Mayorista Estándar</option>
+                                                <option value="b2b2">B2B 2 - Mayorista Preferente</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+                                    <table class="w-full text-left border-collapse text-[11px]">
+                                        <thead>
+                                            <tr class="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400">
+                                                <th class="p-3 font-semibold">Producto / Línea</th>
+                                                <th class="p-3 font-semibold text-center w-12">Unidades</th>
+                                                <th class="p-3 font-semibold text-right">EXW Unitario</th>
+                                                <th class="p-3 font-semibold text-right text-gold-500 dark:text-gold-400">Costo Landed</th>
+                                                <th class="p-3 font-semibold text-center w-36">Precio Manual (c/IVA)</th>
+                                                <th class="p-3 font-semibold text-center w-16">Margen/Desc</th>
+                                                <th class="p-3 font-semibold text-right">Utilidad Neta (Paso 4)</th>
+                                                <th class="p-3 font-semibold text-center">ROI %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sim-breakdown-tbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Columna Derecha: Dashboard Financiero del Simulador -->
+                        <div class="lg:col-span-4 space-y-6">
+                            
+                            <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-gold-800/40 rounded-2xl p-6 shadow-md relative overflow-hidden space-y-4">
+                                <div class="absolute -right-12 -top-12 w-44 h-44 bg-gold-500/5 rounded-full blur-2xl"></div>
+                                <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <h4 class="font-serif text-lg text-gold-600 dark:text-gold-400 font-bold">Resumen Financiero General</h4>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Indicadores económicos de la estrategia propuesta</p>
+                                </div>
+
+                                <div class="space-y-4 text-xs">
+                                    <div class="p-3.5 bg-slate-100 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-850 flex justify-between items-center shadow-inner">
+                                        <div>
+                                            <span class="text-slate-500 block uppercase font-bold text-[9px] tracking-wider">Costo Importación Total</span>
+                                            <span class="text-[10px] text-slate-400 mt-0.5">(Costo de Internación Neto)</span>
+                                        </div>
+                                        <span id="sim-summary-landed-net" class="text-lg font-bold text-slate-800 dark:text-slate-200">$0</span>
+                                    </div>
+
+                                    <!-- B2C Proyecciones -->
+                                    <div class="p-4 bg-emerald-50 dark:bg-emerald-950/10 border border-emerald-200 dark:border-emerald-900/30 rounded-xl space-y-2">
+                                        <div class="flex justify-between font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                                            <span>Canal B2C (Público Final)</span>
+                                            <span id="sim-retorno-b2c-bruto" class="font-extrabold text-slate-800 dark:text-slate-100">$0</span>
+                                        </div>
+                                        <div class="grid grid-cols-2 text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-emerald-200/40 dark:border-emerald-900/40">
+                                            <span>Venta Total PVP: <strong id="sim-retorno-b2c-venta-label" class="text-slate-700 dark:text-slate-200">$0</strong></span>
+                                            <span class="text-right">Utilidad Total: <strong id="sim-retorno-b2c-util" class="text-emerald-600 dark:text-emerald-400 font-bold">$0</strong></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- B2B1 Proyecciones -->
+                                    <div class="p-4 bg-blue-50 dark:bg-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-xl space-y-2">
+                                        <div class="flex justify-between font-bold text-blue-600 dark:text-blue-400 text-sm">
+                                            <span>Canal B2B 1 (Mayorista)</span>
+                                            <span id="sim-retorno-b2b1-bruto" class="font-extrabold text-slate-800 dark:text-slate-100">$0</span>
+                                        </div>
+                                        <div class="grid grid-cols-2 text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-blue-200/40 dark:border-blue-900/40">
+                                            <span>Venta Total: <strong id="sim-retorno-b2b1-venta-label" class="text-slate-700 dark:text-slate-200">$0</strong></span>
+                                            <span class="text-right">Utilidad Total: <strong id="sim-retorno-b2b1-util" class="text-blue-600 dark:text-blue-400 font-bold">$0</strong></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- B2B2 Proyecciones -->
+                                    <div class="p-4 bg-purple-50 dark:bg-purple-950/10 border border-purple-200 dark:border-purple-900/30 rounded-xl space-y-2">
+                                        <div class="flex justify-between font-bold text-purple-600 dark:text-purple-400 text-sm">
+                                            <span>Canal B2B 2 (Preferente)</span>
+                                            <span id="sim-retorno-b2b2-bruto" class="font-extrabold text-slate-800 dark:text-slate-100">$0</span>
+                                        </div>
+                                        <div class="grid grid-cols-2 text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-purple-200/40 dark:border-purple-900/40">
+                                            <span>Venta Total: <strong id="sim-retorno-b2b2-venta-label" class="text-slate-700 dark:text-slate-200">$0</strong></span>
+                                            <span class="text-right">Utilidad Total: <strong id="sim-retorno-b2b2-util" class="text-purple-600 dark:text-purple-400 font-bold">$0</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ================== VISTA 3: PROGRAMACIÓN DE PAGOS ================== -->
+                <div id="view-programacion-pagos" class="space-y-6 hidden">
+                    
+                    <!-- PANEL DETALLADO DE SEGUIMIENTO (FINANCIAL DASHBOARD) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center justify-between">
+                            <div class="space-y-1">
+                                <span class="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Total Obligaciones Pendientes</span>
+                                <h3 id="pagos-kpi-pendiente" class="text-2xl font-extrabold text-amber-600 dark:text-amber-400">$0</h3>
+                                <p class="text-[10px] text-slate-400">Facturas vigentes por liquidar</p>
+                            </div>
+                            <span class="text-3xl text-amber-400"><i class="fa-solid fa-hourglass-half"></i></span>
+                        </div>
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center justify-between">
+                            <div class="space-y-1">
+                                <span class="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Total Histórico Pagado</span>
+                                <h3 id="pagos-kpi-pagado" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">$0</h3>
+                                <p class="text-[10px] text-slate-400">Flujos cancelados con éxito</p>
+                            </div>
+                            <span class="text-3xl text-emerald-400"><i class="fa-solid fa-circle-check"></i></span>
+                        </div>
+                        <div class="bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center justify-between">
+                            <div class="space-y-1">
+                                <span class="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Próximo Vencimiento</span>
+                                <h3 id="pagos-kpi-proximo" class="text-lg font-extrabold text-slate-800 dark:text-slate-100">Sin alertas activas</h3>
+                                <p id="pagos-kpi-proximo-fecha" class="text-[10px] text-gold-600 dark:text-gold-400">--/--/--</p>
+                            </div>
+                            <span class="text-3xl text-gold-500"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <!-- Formulario de Alerta -->
+                        <div class="lg:col-span-4 bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+                            <h3 class="font-serif text-lg text-slate-900 dark:text-gold-100 font-bold border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-plus-circle text-gold-500"></i> Programar Nueva Obligación
+                            </h3>
+                            <div class="space-y-1">
+                                <label class="text-[10px] uppercase font-bold text-slate-500">Destinatario / Concepto / Proveedor</label>
+                                <input type="text" id="pay-provider" placeholder="Ej: Aduana de Chile o Proveedor" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] uppercase font-bold text-slate-500">Monto CLP de Obligación</label>
+                                <input type="number" id="pay-amount" placeholder="Monto en pesos" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500 font-semibold">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] uppercase font-bold text-slate-500">Fecha de Vencimiento</label>
+                                <input type="date" id="pay-date" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-gold-500 font-semibold">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] uppercase font-bold text-slate-500">Canal Preferente Notificación</label>
+                                <span class="text-[10px] text-slate-400 block pb-1">Se dispararán alertas conjuntas</span>
+                                <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 text-[10px] space-y-1">
+                                    <p class="text-emerald-500 font-bold"><i class="fa-brands fa-whatsapp"></i> Canal WhatsApp Activo</p>
+                                    <p class="text-blue-500 font-bold"><i class="fa-solid fa-envelope"></i> Canal Correo Electrónico Activo</p>
+                                </div>
+                            </div>
+                            <button onclick="scheduleInvoice()" class="w-full bg-gold-500 hover:bg-gold-600 text-white dark:text-slate-950 font-bold py-2.5 rounded-lg text-xs transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-calendar-plus"></i> Agendar Alerta
+                            </button>
+                        </div>
+
+                        <!-- Listado de Alertas y Vencimientos -->
+                        <div class="lg:col-span-8 space-y-4">
+                            <div class="flex items-center justify-between bg-white dark:bg-charcoal-900 border border-slate-200 dark:border-slate-800 px-6 py-4 rounded-2xl shadow-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gold-500"><i class="fa-solid fa-list-check"></i></span>
+                                    <h4 class="font-serif text-sm text-slate-900 dark:text-gold-100 font-bold">Listado General de Pagos</h4>
+                                </div>
+                                <div class="flex gap-1.5 rounded-lg bg-slate-100 dark:bg-slate-950 p-0.5 border border-slate-200 dark:border-slate-850">
+                                    <button onclick="filterInvoices('todos')" id="btn-filt-todos" class="text-[10px] px-2.5 py-1 rounded font-bold transition-all bg-gold-500 text-white dark:text-slate-950 shadow">Todos</button>
+                                    <button onclick="filterInvoices('Pendiente')" id="btn-filt-pendiente" class="text-[10px] px-2.5 py-1 rounded font-bold transition-all text-slate-500 dark:text-slate-400">Pendientes</button>
+                                    <button onclick="filterInvoices('Pagado')" id="btn-filt-pagado" class="text-[10px] px-2.5 py-1 rounded font-bold transition-all text-slate-500 dark:text-slate-400">Pagados</button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400">
+                                            <th class="p-4 font-semibold">Obligación / Destinatario</th>
+                                            <th class="p-4 font-semibold text-right">Monto CLP</th>
+                                            <th class="p-4 font-semibold text-center">Vencimiento</th>
+                                            <th class="p-4 font-semibold text-center">Estado</th>
+                                            <th class="p-4 font-semibold text-center">Alertas Duales</th>
+                                            <th class="p-4 font-semibold text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invoices-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FOOTER CORPORATIVO -->
+        <footer class="bg-white dark:bg-charcoal-900 border-t border-slate-200 dark:border-gold-800/30 px-6 py-4 text-center text-[11px] text-slate-400 dark:text-slate-500 shrink-0">
+            Cruz & Valencia Co. — Todos los derechos reservados. Plataforma Corporativa Unificada v4.0.
+        </footer>
+    </div>
+
+    <!-- SCRIPT DE INTELIGENCIA DE NEGOCIO (LOGICA UNIFICADA Y CORREGIDA) -->
+    <script>
+        // CONFIGURACIONES Y ESTADOS GLOBALES
+        const COMP_PASS_PIN = "1380";
+        const currencySymbols = { 'EUR': '€', 'USD': '$', 'CLP': '$' };
+        
+        let isSinglePriceMode = true;
+        let mixedProducts = [];
+        let savedSimulations = [];
+        let currentCalculatedState = null;
+        let calculatedProducts = []; 
+        let invoices = [];
+        let activeInvoiceFilter = 'todos';
+
+        // Estado del Simulador Comercial
+        let simCalculatedProducts = [];
+        let simProductOverrides = {};
+
+        // Catálogo default genérico
+        const defaultMixedProducts = [
+            { id: 1, name: "Perfume Imperial Oud EDP 100ml", qty: 18, price: 37.14 },
+            { id: 2, name: "Agua de Colonia Neroli Sauvage 100ml", qty: 18, price: 37.14 },
+            { id: 3, name: "Extracto de Rose Gold Parfum 100ml", qty: 18, price: 37.14 },
+            { id: 4, name: "Esencia de Cuero Intenso EDP 100ml", qty: 18, price: 37.14 },
+            { id: 5, name: "Sándalo de Oriente Extrait 100ml", qty: 18, price: 37.14 },
+            { id: 6, name: "Ámbar Gris Celestial EDP 100ml", qty: 18, price: 37.14 },
+            { id: 7, name: "Vainilla Bourbon Absoluto 100ml", qty: 18, price: 37.14 },
+            { id: 8, name: "Vetiver Especiado EDP 100ml", qty: 18, price: 37.14 },
+            { id: 9, name: "Almizcle Blanco Purificado 100ml", qty: 18, price: 37.14 }
+        ];
+
+        let costDistributionChart = null;
+
+        window.onload = function() {
+            // Inicializar Modo Oscuro por Defecto
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon').className = "fa-solid fa-sun";
+            } else {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').className = "fa-solid fa-moon";
+            }
+
+            // Verificar si hay sesión activa
+            const sessionActive = sessionStorage.getItem('cv_auth_session');
+            if (sessionActive === "authorized") {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app-content').classList.remove('hidden');
+                initializePlatform();
+            }
+
+            // Atajo Enter para Login
+            document.getElementById('login-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') { attemptLogin(); }
+            });
+
+            // Registrar Worker de PDF.js
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+            // Configurar Zona Drag & Drop
+            setupDragAndDrop();
+        };
+
+        // ACCESO DE DIRECCIÓN (PIN SECURITY)
+        function attemptLogin() {
+            const passField = document.getElementById('login-password');
+            const errField = document.getElementById('login-error');
+
+            if (passField.value === COMP_PASS_PIN) {
+                sessionStorage.setItem('cv_auth_session', 'authorized');
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app-content').classList.remove('hidden');
+                initializePlatform();
+                showNotification("Acceso Autorizado", "Bienvenido a la Suite de Dirección Cruz & Valencia.", "success");
+            } else {
+                errField.classList.remove('hidden');
+                passField.value = "";
+                passField.focus();
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('cv_auth_session');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('main-app-content').classList.add('hidden');
+            document.getElementById('login-password').value = "";
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        // CONTROLADOR DE CAMBIO DE TEMA
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeIcon = document.getElementById('theme-icon');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.className = "fa-solid fa-sun";
+                showNotification("Tema Claro", "Modo de alto contraste activado.", "info");
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.className = "fa-solid fa-moon";
+                showNotification("Tema Oscuro", "Modo oscuro activado para descanso visual.", "info");
+            }
+        }
+
+        // INICIALIZACIÓN
+        function initializePlatform() {
+            const savedHist = localStorage.getItem('cv_historial_embarques');
+            if (savedHist) { savedSimulations = JSON.parse(savedHist); }
+
+            const savedAgenda = localStorage.getItem('cv_agenda_pagos');
+            if (savedAgenda) { invoices = JSON.parse(savedAgenda); }
+            else {
+                invoices = [
+                    { id: 1, provider: "Proveedor de Fragancias Premium (Factura)", amount: 6106930, date: "2026-07-25", status: "Pendiente" },
+                    { id: 2, provider: "Aduana de Chile (Gravamen CIF)", amount: 1250000, date: "2026-07-15", status: "Pendiente" },
+                    { id: 3, provider: "Inscripción Cosmética ISP", amount: 120000, date: "2026-07-08", status: "Pagado" }
+                ];
+            }
+
+            mixedProducts = JSON.parse(JSON.stringify(defaultMixedProducts));
+            renderMixedTable();
+            calculateImport();
+            renderInvoicesTable();
+            updatePaymentsDashboard();
+            renderHistorialTable();
+        }
+
+        // CAMBIAR DE PESTAÑA PRINCIPAL (3 PESTAÑAS)
+        function switchMainTab(tabId) {
+            const btnRegistro = document.getElementById('btn-tab-registro');
+            const btnSimulador = document.getElementById('btn-tab-simulador');
+            const btnPagos = document.getElementById('btn-tab-pagos');
+
+            const viewRegistro = document.getElementById('view-registro-importaciones');
+            const viewSimulador = document.getElementById('view-simulador-precios');
+            const viewPagos = document.getElementById('view-programacion-pagos');
+
+            // Resetear estilos
+            const inactiveClass = "px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2";
+            const activeClass = "px-4 py-2 rounded-lg text-xs font-bold transition-all bg-gold-500 text-white dark:text-slate-950 shadow flex items-center gap-2";
+
+            btnRegistro.className = inactiveClass;
+            btnSimulador.className = inactiveClass;
+            btnPagos.className = inactiveClass;
+
+            viewRegistro.classList.add('hidden');
+            viewSimulador.classList.add('hidden');
+            viewPagos.classList.add('hidden');
+
+            if (tabId === 'registro') {
+                viewRegistro.classList.remove('hidden');
+                btnRegistro.className = activeClass;
+            } else if (tabId === 'simulador') {
+                viewSimulador.classList.remove('hidden');
+                btnSimulador.className = activeClass;
+                sincronizarDatosASimulador();
+            } else if (tabId === 'pagos') {
+                viewPagos.classList.remove('hidden');
+                btnPagos.className = activeClass;
+                updatePaymentsDashboard();
+                renderInvoicesTable();
+            }
+        }
+
+        // CONTROLADORES DE FORMATO
+        function formatCLP(value) {
+            return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(value);
+        }
+
+        function formatForeign(value, currency) {
+            const symbol = currencySymbols[currency] || '$';
+            return `${symbol} ${value.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function updateCurrencyDefaults() {
+            const cur = document.getElementById('import-currency').value;
+            const labels = document.querySelectorAll('.currency-label');
+            labels.forEach(lbl => lbl.innerText = cur === 'EUR' ? 'EUR (€)' : cur === 'USD' ? 'USD ($)' : 'CLP ($)');
+
+            const tcInput = document.getElementById('import-exchange-rate');
+            if (cur === 'EUR') tcInput.value = "1015";
+            else if (cur === 'USD') tcInput.value = "935";
+            else tcInput.value = "1";
+
+            calculateImport();
+        }
+
+        function togglePricingMode(isSingle) {
+            isSinglePriceMode = isSingle;
+            const btnSingle = document.getElementById('mode-single-btn');
+            const btnMixed = document.getElementById('mode-mixed-btn');
+            const containerSingle = document.getElementById('input-single-container');
+            const containerMixed = document.getElementById('input-mixed-container');
+
+            if (isSingle) {
+                btnSingle.className = "text-xs px-3 py-1.5 rounded-md font-bold transition-all bg-gold-500 text-white dark:text-slate-950 shadow";
+                btnMixed.className = "text-xs px-3 py-1.5 rounded-md font-bold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200";
+                containerSingle.classList.remove('hidden');
+                containerMixed.classList.add('hidden');
+            } else {
+                btnSingle.className = "text-xs px-3 py-1.5 rounded-md font-bold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200";
+                btnMixed.className = "text-xs px-3 py-1.5 rounded-md font-bold transition-all bg-gold-500 text-white dark:text-slate-950 shadow";
+                containerSingle.classList.add('hidden');
+                containerMixed.classList.remove('hidden');
+            }
+            calculateImport();
+        }
+
+        function quickSetArancel(pct) {
+            document.getElementById('cost-arancel-pct').value = pct;
+            calculateImport();
+        }
+
+        // TABLA DE PRECIOS MIXTOS (GESTOR)
+        function renderMixedTable() {
+            const tbody = document.getElementById('mixed-products-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            const cur = document.getElementById('import-currency').value;
+
+            mixedProducts.forEach((p, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-200 dark:border-slate-850 hover:bg-slate-100/40 dark:hover:bg-slate-900/40 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <input type="text" value="${p.name}" onchange="updateMixedProductField(${idx}, 'name', this.value)" class="bg-transparent border border-transparent hover:border-slate-300 dark:hover:border-slate-800 focus:border-gold-500 focus:bg-white dark:focus:bg-slate-950 rounded px-2.5 py-1 w-full text-slate-800 dark:text-slate-200 font-medium text-xs">
+                    </td>
+                    <td class="p-3 text-center">
+                        <input type="number" value="${p.qty}" oninput="updateMixedProductField(${idx}, 'qty', parseInt(this.value) || 0)" class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 w-20 text-center text-xs text-slate-800 dark:text-slate-200 font-bold">
+                    </td>
+                    <td class="p-3">
+                        <input type="number" step="0.01" value="${p.price}" oninput="updateMixedProductField(${idx}, 'price', parseFloat(this.value) || 0)" class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1 w-full text-right text-xs text-slate-800 dark:text-slate-200 font-bold">
+                    </td>
+                    <td class="p-3 text-right text-slate-500 dark:text-slate-400 font-semibold font-mono">
+                        ${formatForeign(p.qty * p.price, cur)}
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="removeMixedProductRow(${idx})" class="text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            actualizarMixedTotalDisplay();
+        }
+
+        function addMixedProductRow() {
+            mixedProducts.push({
+                id: Date.now(),
+                name: "Nueva Fragancia Importada",
+                qty: 18,
+                price: 37.14
+            });
+            renderMixedTable();
+            calculateImport();
+        }
+
+        function removeMixedProductRow(idx) {
+            mixedProducts.splice(idx, 1);
+            renderMixedTable();
+            calculateImport();
+        }
+
+        function updateMixedProductField(idx, field, value) {
+            mixedProducts[idx][field] = value;
+            actualizarMixedTotalDisplay();
+            calculateImport();
+        }
+
+        function actualizarMixedTotalDisplay() {
+            const cur = document.getElementById('import-currency').value;
+            let sum = 0;
+            mixedProducts.forEach(p => sum += (p.qty * p.price));
+            document.getElementById('mixed-total-fob').innerText = formatForeign(sum, cur);
+        }
+
+        // MOTOR CENTRAL DE COSTEO DE IMPORTACIÓN
+        function calculateImport() {
+            const cur = document.getElementById('import-currency').value;
+            const tc = parseFloat(document.getElementById('import-exchange-rate').value) || 1;
+
+            let totalQty = 0;
+            let totalFobForeign = 0;
+
+            if (isSinglePriceMode) {
+                totalQty = parseInt(document.getElementById('single-qty').value) || 0;
+                const singleFob = parseFloat(document.getElementById('single-unit-fob').value) || 0;
+                totalFobForeign = totalQty * singleFob;
+                document.getElementById('single-total-fob').innerText = formatForeign(totalFobForeign, cur);
+            } else {
+                mixedProducts.forEach(p => {
+                    totalQty += p.qty;
+                    totalFobForeign += (p.qty * p.price);
+                });
+            }
+
+            if (totalQty === 0) totalQty = 1;
+
+            const totalFobCLP = totalFobForeign * tc;
+
+            const fleteForeign = parseFloat(document.getElementById('cost-flete').value) || 0;
+            const seguroForeign = parseFloat(document.getElementById('cost-seguro').value) || 0;
+
+            const fleteCLP = fleteForeign * tc;
+            const seguroCLP = seguroForeign * tc;
+
+            const totalCIFCLP = totalFobCLP + fleteCLP + seguroCLP;
+
+            const arancelPct = parseFloat(document.getElementById('cost-arancel-pct').value) || 0;
+            const arancelCLP = totalCIFCLP * (arancelPct / 100);
+
+            const baseIVA = totalCIFCLP + arancelCLP;
+            const ivaCLP = baseIVA * 0.19;
+
+            // Gastos locales chilenos
+            const ispInsc = parseFloat(document.getElementById('local-isp-insc').value) || 0;
+            const ispCda = parseFloat(document.getElementById('local-isp-cda').value) || 0;
+            const ispUyd = parseFloat(document.getElementById('local-isp-uyd').value) || 0;
+            const agente = parseFloat(document.getElementById('local-agente').value) || 0;
+            const quimico = parseFloat(document.getElementById('local-quimico').value) || 0;
+            const otros = parseFloat(document.getElementById('local-otros').value) || 0;
+
+            const totalGastosLocalesCLP = ispInsc + ispCda + ispUyd + agente + quimico + otros;
+
+            const totalLandedNetoCLP = totalCIFCLP + arancelCLP + totalGastosLocalesCLP;
+            const totalCajaRequeridaCLP = totalLandedNetoCLP + ivaCLP;
+            const costUnitarioPromedio = totalLandedNetoCLP / totalQty;
+
+            // Guardar Estado
+            currentCalculatedState = {
+                currency: cur,
+                tc: tc,
+                totalQty: totalQty,
+                fobForeign: totalFobForeign,
+                fobCLP: totalFobCLP,
+                fleteForeign: fleteForeign,
+                fleteCLP: fleteCLP,
+                seguroForeign: seguroForeign,
+                seguroCLP: seguroCLP,
+                totalCIFCLP: totalCIFCLP,
+                arancelPct: arancelPct,
+                arancelCLP: arancelCLP,
+                ivaCLP: ivaCLP,
+                ispInsc: ispInsc,
+                ispCda: ispCda,
+                ispUyd: ispUyd,
+                agente: agente,
+                quimico: quimico,
+                otros: otros,
+                totalLocalCLP: totalGastosLocalesCLP,
+                totalLandedNetoCLP: totalLandedNetoCLP,
+                totalCajaRequeridaCLP: totalCajaRequeridaCLP,
+                costUnitarioPromedio: costUnitarioPromedio
+            };
+
+            // Imprimir en la interfaz
+            document.getElementById('kpi-fob').innerText = formatCLP(totalFobCLP);
+            document.getElementById('kpi-flete').innerText = formatCLP(fleteCLP);
+            document.getElementById('kpi-arancel').innerText = formatCLP(arancelCLP);
+            document.getElementById('kpi-iva').innerText = formatCLP(ivaCLP);
+            document.getElementById('kpi-cost-unit').innerText = formatCLP(costUnitarioPromedio);
+            document.getElementById('kpi-caja').innerText = formatCLP(totalCajaRequeridaCLP);
+
+            document.getElementById('summary-fob').innerText = formatForeign(totalFobForeign, cur) + ` (${formatCLP(totalFobCLP)})`;
+            document.getElementById('summary-cif').innerText = formatCLP(totalCIFCLP);
+            document.getElementById('summary-arancel-clp').innerText = formatCLP(arancelCLP);
+            document.getElementById('summary-locals-clp').innerText = formatCLP(totalGastosLocalesCLP);
+            document.getElementById('summary-landed-neto').innerText = formatCLP(totalLandedNetoCLP);
+            document.getElementById('summary-iva-clp').innerText = formatCLP(ivaCLP);
+            document.getElementById('summary-caja-requerida').innerText = formatCLP(totalCajaRequeridaCLP);
+
+            // Prorrateo
+            distribuirCostosProrrateados(totalFobForeign, totalLandedNetoCLP, tc, cur);
+            updateChart(totalFobCLP, fleteCLP, seguroCLP, arancelCLP, totalGastosLocalesCLP);
+        }
+
+        function distribuirCostosProrrateados(totalFobForeign, totalLandedNetoCLP, tc, cur) {
+            const tbody = document.getElementById('prorrateo-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const totalQtyProrrateada = parseInt(document.getElementById('single-qty').value) || 0;
+
+            if (isSinglePriceMode) {
+                const desc = document.getElementById('single-desc').value || "Línea Perfumería de Nicho";
+                const qty = totalQtyProrrateada;
+                const unitPrice = parseFloat(document.getElementById('single-unit-fob').value) || 0;
+                const totalFobProductCLP = qty * unitPrice * tc;
+                const landedUnit = qty > 0 ? totalLandedNetoCLP / qty : 0;
+
+                calculatedProducts = [{
+                    name: desc,
+                    qty: qty,
+                    priceEXW: unitPrice,
+                    fobCLP: totalFobProductCLP,
+                    weight: 1.0,
+                    landedUnit: landedUnit,
+                    landedTotal: totalLandedNetoCLP
+                }];
+            } else {
+                calculatedProducts = mixedProducts.map(p => {
+                    const fobProductForeign = p.qty * p.price;
+                    const weight = totalFobForeign > 0 ? (fobProductForeign / totalFobForeign) : 0;
+                    const landedTotalProduct = weight * totalLandedNetoCLP;
+                    const landedUnitProduct = p.qty > 0 ? (landedTotalProduct / p.qty) : 0;
+
+                    return {
+                        name: p.name,
+                        qty: p.qty,
+                        priceEXW: p.price,
+                        fobCLP: fobProductForeign * tc,
+                        weight: weight,
+                        landedUnit: landedUnitProduct,
+                        landedTotal: landedTotalProduct
+                    };
+                });
+            }
+
+            calculatedProducts.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-200 dark:border-slate-850 hover:bg-slate-100/40 dark:hover:bg-slate-900/40 transition-colors text-slate-800 dark:text-slate-300';
+                tr.innerHTML = `
+                    <td class="p-4 font-semibold text-slate-900 dark:text-slate-100">${p.name}</td>
+                    <td class="p-4 text-center font-bold">${p.qty}</td>
+                    <td class="p-4 text-right font-mono text-slate-500 dark:text-slate-400">${formatForeign(p.priceEXW, cur)}</td>
+                    <td class="p-4 text-right font-semibold">${formatCLP(p.fobCLP)}</td>
+                    <td class="p-4 text-right text-slate-500 dark:text-slate-400 font-bold">${(p.weight * 100).toFixed(1)}%</td>
+                    <td class="p-4 text-right font-bold text-gold-600 dark:text-gold-400">${formatCLP(p.landedUnit)}</td>
+                    <td class="p-4 text-right font-bold text-gold-600 dark:text-gold-400">${formatCLP(p.landedTotal)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // GRÁFICO DE INTERNACIÓN
+        function updateChart(fob, flete, seguro, arancel, locales) {
+            const ctx = document.getElementById('cost-chart');
+            if (!ctx) return;
+
+            const chartData = [fob, flete, seguro, arancel, locales];
+
+            if (costDistributionChart) {
+                costDistributionChart.data.datasets[0].data = chartData;
+                costDistributionChart.update();
+            } else {
+                costDistributionChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['FOB Producto', 'Flete', 'Seguro', 'Arancel', 'Locales & ISP'],
+                        datasets: [{
+                            data: chartData,
+                            backgroundColor: ['#cf943c', '#a35f1a', '#834717', '#475569', '#1e293b'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'right',
+                                labels: { color: '#94a3b8', boxWidth: 12, font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // FLUJO DE DATOS INTEGRADO AL SIMULADOR
+        function transferirASimulador() {
+            sincronizarDatosASimulador();
+            switchMainTab('simulador');
+            showNotification("Sincronización Completa", "Todos los costos del embarque se inyectaron en el Simulador.", "success");
+        }
+
+        function sincronizarDatosASimulador() {
+            if (!currentCalculatedState) calculateImport();
+
+            document.getElementById('sim-costo-base-promedio').innerText = formatCLP(currentCalculatedState.costUnitarioPromedio);
+            document.getElementById('sim-summary-landed-net').innerText = formatCLP(currentCalculatedState.totalLandedNetoCLP);
+
+            simCalculatedProducts = JSON.parse(JSON.stringify(calculatedProducts));
+            ejecutarSimulacionesComerciales();
+        }
+
+        // CONTROLADOR DE DESCUENTO MAYORISTA B2B (Mapeados Directamente de PVP B2C)
+        function syncDiscount(channel, val, origin) {
+            let numVal = parseFloat(val);
+            if (isNaN(numVal)) return;
+
+            if (numVal < 5) numVal = 5;
+            if (numVal > 80) numVal = 80;
+
+            if (origin === 'slider') {
+                document.getElementById(`input-${channel}-discount`).value = numVal.toFixed(1);
+            } else if (origin === 'input') {
+                document.getElementById(`slider-${channel}-discount`).value = numVal;
+            }
+
+            ejecutarSimulacionesComerciales();
+        }
+
+        // CONTROLADOR DE MARGEN B2C
+        function syncMargin(channel, val, origin) {
+            let numVal = parseFloat(val);
+            if (isNaN(numVal)) return;
+
+            if (numVal < 10) numVal = 10;
+            if (numVal > 90) numVal = 90;
+
+            if (origin === 'slider') {
+                document.getElementById(`input-${channel}-margin`).value = numVal.toFixed(1);
+            } else if (origin === 'input') {
+                document.getElementById(`slider-${channel}-margin`).value = numVal;
+            }
+
+            if (isSinglePriceMode) { simProductOverrides = {}; }
+            ejecutarSimulacionesComerciales();
+        }
+
+        function syncPVP(channel, val) {
+            let priceBruto = parseFloat(val);
+            if (isNaN(priceBruto) || priceBruto <= 0 || !currentCalculatedState) return;
+
+            const baseCost = currentCalculatedState.costUnitarioPromedio;
+            const priceNeto = priceBruto / 1.19;
+
+            let margin = 100 * (1 - (baseCost / priceNeto));
+
+            if (margin < 0.5) margin = 0.5;
+            if (margin > 95) margin = 95;
+
+            document.getElementById(`slider-${channel}-margin`).value = margin.toFixed(1);
+            document.getElementById(`input-${channel}-margin`).value = margin.toFixed(1);
+
+            ejecutarSimulacionesComerciales();
+        }
+
+        // Sincronizar un precio manual ingresado en un canal mayorista B2B
+        function syncManualPrice(channel, val) {
+            let priceBruto = parseFloat(val);
+            if (isNaN(priceBruto) || priceBruto <= 0 || !currentCalculatedState) return;
+
+            const pvpB2C = parseFloat(document.getElementById('input-b2c-pvp-manual').value) || 0;
+            if (pvpB2C > 0) {
+                // Calcular qué descuento equivale este precio bruto manual respecto al PVP
+                let discount = 100 * (1 - (priceBruto / pvpB2C));
+                if (discount < 5) discount = 5;
+                if (discount > 80) discount = 80;
+
+                document.getElementById(`slider-${channel}-discount`).value = discount.toFixed(1);
+                document.getElementById(`input-${channel}-discount`).value = discount.toFixed(1);
+            }
+
+            ejecutarSimulacionesComerciales();
+        }
+
+        function overrideSimProductPrice(name, channel, val) {
+            let brutoValue = parseFloat(val);
+            if (isNaN(brutoValue) || brutoValue <= 0) return;
+
+            if (!simProductOverrides[name]) { simProductOverrides[name] = {}; }
+            if (channel === 'b2c') simProductOverrides[name].b2cBruto = brutoValue;
+            else if (channel === 'b2b1') simProductOverrides[name].b2b1Bruto = brutoValue;
+            else if (channel === 'b2b2') simProductOverrides[name].b2b2Bruto = brutoValue;
+
+            ejecutarSimulacionesComerciales();
+        }
+
+        function clearSimProductOverrides() {
+            simProductOverrides = {};
+            ejecutarSimulacionesComerciales();
+            showNotification("Precios Restablecidos", "Se borraron los PVPs manuales de la lista.", "info");
+        }
+
+        // EJECUCIÓN DE SIMULACIONES Y MATRICES COMERCIALES (4 PASOS DE CÁLCULO)
+        function ejecutarSimulacionesComerciales() {
+            if (simCalculatedProducts.length === 0) return;
+
+            const marginB2C = parseFloat(document.getElementById('slider-b2c-margin').value);
+            const discountB2B1 = parseFloat(document.getElementById('slider-b2b1-discount').value);
+            const discountB2B2 = parseFloat(document.getElementById('slider-b2b2-discount').value);
+
+            let totalQty = 0;
+            let totalLandedCost = 0;
+
+            simCalculatedProducts.forEach(p => {
+                totalQty += p.qty;
+                totalLandedCost += p.landedTotal;
+
+                // --- CANAL B2C (PÚBLICO FINAL) ---
+                let overrideB2C = simProductOverrides[p.name]?.b2cBruto;
+                if (overrideB2C !== undefined && overrideB2C > 0) {
+                    p.b2cBruto = overrideB2C;
+                    p.b2cNeto = p.b2cBruto / 1.19;
+                    p.b2cMargin = p.b2cNeto > 0 ? (1 - (p.landedUnit / p.b2cNeto)) * 100 : 0;
+                } else {
+                    let divisor = (1 - (marginB2C / 100));
+                    p.b2cNeto = p.landedUnit / (divisor <= 0 ? 0.01 : divisor);
+                    p.b2cBruto = p.b2cNeto * 1.19;
+                    p.b2cMargin = marginB2C;
+                }
+                p.b2cUtilidadUnit = p.b2cNeto - p.landedUnit;
+                p.b2cUtilidadTotal = p.b2cUtilidadUnit * p.qty;
+                p.b2cROI = p.landedUnit > 0 ? (p.b2cUtilidadUnit / p.landedUnit) * 100 : 0;
+
+                // --- CANAL B2B 1 (MAYORISTA ESTÁNDAR) - 4 PASOS CRÍTICOS ---
+                let overrideB2B1 = simProductOverrides[p.name]?.b2b1Bruto;
+                if (overrideB2B1 !== undefined && overrideB2B1 > 0) {
+                    // Si se sobreescribe el precio bruto manual
+                    p.b2b1Bruto = overrideB2B1; // Paso 2: Bruto obtenido directamente
+                } else {
+                    // Paso 1: Aplicar porcentaje de descuento directo al PVP B2C con IVA
+                    p.b2b1Bruto = p.b2cBruto * (1 - (discountB2B1 / 100)); // Paso 2: Bruto calculado
+                }
+                // Paso 3: Desglosar IVA para obtener Precio Neto
+                p.b2b1Neto = p.b2b1Bruto / 1.19;
+                // Paso 4: Calcular Utilidad Neta (Neto - Costo Landed Unitario)
+                p.b2b1UtilidadUnit = p.b2b1Neto - p.landedUnit;
+                p.b2b1UtilidadTotal = p.b2b1UtilidadUnit * p.qty;
+                p.b2b1Margin = p.b2b1Neto > 0 ? (1 - (p.landedUnit / p.b2b1Neto)) * 100 : 0;
+                p.b2b1ROI = p.landedUnit > 0 ? (p.b2b1UtilidadUnit / p.landedUnit) * 100 : 0;
+
+                // --- CANAL B2B 2 (MAYORISTA PREFERENTE) - 4 PASOS CRÍTICOS ---
+                let overrideB2B2 = simProductOverrides[p.name]?.b2b2Bruto;
+                if (overrideB2B2 !== undefined && overrideB2B2 > 0) {
+                    p.b2b2Bruto = overrideB2B2; // Paso 2: Bruto obtenido directamente
+                } else {
+                    // Paso 1: Aplicar porcentaje de descuento directo al PVP B2C con IVA
+                    p.b2b2Bruto = p.b2cBruto * (1 - (discountB2B2 / 100)); // Paso 2: Bruto calculado
+                }
+                // Paso 3: Desglosar IVA para obtener Precio Neto
+                p.b2b2Neto = p.b2b2Bruto / 1.19;
+                // Paso 4: Calcular Utilidad Neta (Neto - Costo Landed Unitario)
+                p.b2b2UtilidadUnit = p.b2b2Neto - p.landedUnit;
+                p.b2b2UtilidadTotal = p.b2b2UtilidadUnit * p.qty;
+                p.b2b2Margin = p.b2b2Neto > 0 ? (1 - (p.landedUnit / p.b2b2Neto)) * 100 : 0;
+                p.b2b2ROI = p.landedUnit > 0 ? (p.b2b2UtilidadUnit / p.landedUnit) * 100 : 0;
+            });
+
+            // Consolidados generales
+            const totalVentaB2C = simCalculatedProducts.reduce((sum, p) => sum + (p.b2cBruto * p.qty), 0);
+            const totalUtilidadB2C = simCalculatedProducts.reduce((sum, p) => sum + p.b2cUtilidadTotal, 0);
+            const promedioB2CBruto = totalVentaB2C / totalQty;
+            const b2cMarginWeighted = simCalculatedProducts.reduce((sum, p) => sum + (p.b2cMargin * (p.b2cNeto * p.qty)), 0) / simCalculatedProducts.reduce((sum, p) => sum + (p.b2cNeto * p.qty), 0) || marginB2C;
+
+            const totalVentaB2B1 = simCalculatedProducts.reduce((sum, p) => sum + (p.b2b1Bruto * p.qty), 0);
+            const totalUtilidadB2B1 = simCalculatedProducts.reduce((sum, p) => sum + p.b2b1UtilidadTotal, 0);
+            const promedioB2B1Bruto = totalVentaB2B1 / totalQty;
+            const promedioB2B1Neto = promedioB2B1Bruto / 1.19;
+            const b2b1MarginWeighted = simCalculatedProducts.reduce((sum, p) => sum + (p.b2b1Margin * (p.b2b1Neto * p.qty)), 0) / simCalculatedProducts.reduce((sum, p) => sum + (p.b2b1Neto * p.qty), 0) || 0;
+
+            const totalVentaB2B2 = simCalculatedProducts.reduce((sum, p) => sum + (p.b2b2Bruto * p.qty), 0);
+            const totalUtilidadB2B2 = simCalculatedProducts.reduce((sum, p) => sum + p.b2b2UtilidadTotal, 0);
+            const promedioB2B2Bruto = totalVentaB2B2 / totalQty;
+            const promedioB2B2Neto = promedioB2B2Bruto / 1.19;
+            const b2b2MarginWeighted = simCalculatedProducts.reduce((sum, p) => sum + (p.b2b2Margin * (p.b2b2Neto * p.qty)), 0) / simCalculatedProducts.reduce((sum, p) => sum + (p.b2b2Neto * p.qty), 0) || 0;
+
+            // Inyectar en Pantalla
+            document.getElementById('res-b2c-bruto').innerText = formatCLP(promedioB2CBruto);
+            document.getElementById('res-b2c-utilidad').innerText = formatCLP(totalUtilidadB2C / totalQty) + ` (${b2cMarginWeighted.toFixed(1)}%)`;
+            document.getElementById('lbl-b2c-suggest').innerText = `PVP Promedio Sugerido: ${formatCLP(promedioB2CBruto)}`;
+            document.getElementById('label-b2c-margin').innerText = `${b2cMarginWeighted.toFixed(1)}% Margen`;
+            if (document.activeElement !== document.getElementById('input-b2c-pvp-manual')) {
+                document.getElementById('input-b2c-pvp-manual').value = Math.round(promedioB2CBruto);
+            }
+
+            // B2B 1
+            document.getElementById('res-b2b1-bruto').innerText = formatCLP(promedioB2B1Bruto);
+            document.getElementById('res-b2b1-neto').innerText = formatCLP(promedioB2B1Neto);
+            document.getElementById('res-b2b1-utilidad').innerText = formatCLP(totalUtilidadB2B1 / totalQty);
+            document.getElementById('res-b2b1-margin-eq').innerText = `${b2b1MarginWeighted.toFixed(1)}%`;
+            document.getElementById('lbl-b2b1-eq').innerText = `Paso 1: -${discountB2B1.toFixed(1)}% desc. sobre PVP`;
+            document.getElementById('label-b2b1-discount').innerText = `${discountB2B1.toFixed(1)}% Descuento`;
+            if (document.activeElement !== document.getElementById('input-b2b1-pvp-manual')) {
+                document.getElementById('input-b2b1-pvp-manual').value = Math.round(promedioB2B1Bruto);
+            }
+
+            // B2B 2
+            document.getElementById('res-b2b2-bruto').innerText = formatCLP(promedioB2B2Bruto);
+            document.getElementById('res-b2b2-neto').innerText = formatCLP(promedioB2B2Neto);
+            document.getElementById('res-b2b2-utilidad').innerText = formatCLP(totalUtilidadB2B2 / totalQty);
+            document.getElementById('res-b2b2-margin-eq').innerText = `${b2b2MarginWeighted.toFixed(1)}%`;
+            document.getElementById('lbl-b2b2-eq').innerText = `Paso 1: -${discountB2B2.toFixed(1)}% desc. sobre PVP`;
+            document.getElementById('label-b2b2-discount').innerText = `${discountB2B2.toFixed(1)}% Descuento`;
+            if (document.activeElement !== document.getElementById('input-b2b2-pvp-manual')) {
+                document.getElementById('input-b2b2-pvp-manual').value = Math.round(promedioB2B2Bruto);
+            }
+
+            // Cuadro de Mando Financiero General (Derecha)
+            document.getElementById('sim-retorno-b2c-bruto').innerText = formatCLP(totalVentaB2C);
+            document.getElementById('sim-retorno-b2c-venta-label').innerText = formatCLP(totalVentaB2C);
+            document.getElementById('sim-retorno-b2c-util').innerText = formatCLP(totalUtilidadB2C);
+
+            document.getElementById('sim-retorno-b2b1-bruto').innerText = formatCLP(totalVentaB2B1);
+            document.getElementById('sim-retorno-b2b1-venta-label').innerText = formatCLP(totalVentaB2B1);
+            document.getElementById('sim-retorno-b2b1-util').innerText = formatCLP(totalUtilidadB2B1);
+
+            document.getElementById('sim-retorno-b2b2-bruto').innerText = formatCLP(totalVentaB2B2);
+            document.getElementById('sim-retorno-b2b2-venta-label').innerText = formatCLP(totalVentaB2B2);
+            document.getElementById('sim-retorno-b2b2-util').innerText = formatCLP(totalUtilidadB2B2);
+
+            renderSimBreakdownTable();
+        }
+
+        function renderSimBreakdownTable() {
+            const tbody = document.getElementById('sim-breakdown-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const activeChannel = document.getElementById('sim-breakdown-channel').value;
+
+            simCalculatedProducts.forEach(p => {
+                let sellingPriceBruto = 0;
+                let sellingPriceNeto = 0;
+                let labelDiscountOrMargin = "";
+                let netUtilityUnit = 0;
+                let roiValue = 0;
+
+                if (activeChannel === 'b2c') {
+                    sellingPriceBruto = p.b2cBruto;
+                    sellingPriceNeto = p.b2cNeto;
+                    labelDiscountOrMargin = `${p.b2cMargin.toFixed(1)}% Margen`;
+                    netUtilityUnit = p.b2cUtilidadUnit;
+                    roiValue = p.b2cROI;
+                } else if (activeChannel === 'b2b1') {
+                    sellingPriceBruto = p.b2b1Bruto;
+                    sellingPriceNeto = p.b2b1Neto;
+                    labelDiscountOrMargin = `-${parseFloat(document.getElementById('slider-b2b1-discount').value).toFixed(1)}% Desc.`;
+                    netUtilityUnit = p.b2b1UtilidadUnit;
+                    roiValue = p.b2b1ROI;
+                } else {
+                    sellingPriceBruto = p.b2b2Bruto;
+                    sellingPriceNeto = p.b2b2Neto;
+                    labelDiscountOrMargin = `-${parseFloat(document.getElementById('slider-b2b2-discount').value).toFixed(1)}% Desc.`;
+                    netUtilityUnit = p.b2b2UtilidadUnit;
+                    roiValue = p.b2b2ROI;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-200 dark:border-slate-850 hover:bg-slate-100/30 dark:hover:bg-slate-900/30 transition-colors text-slate-800 dark:text-slate-300';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-900 dark:text-slate-100">${p.name}</td>
+                    <td class="p-3 text-center font-bold">${p.qty}</td>
+                    <td class="p-3 text-right font-mono text-slate-500 dark:text-slate-400">${formatForeign(p.priceEXW, currentCalculatedState.currency)}</td>
+                    <td class="p-3 text-right font-bold text-gold-600 dark:text-gold-400">${formatCLP(p.landedUnit)}</td>
+                    <td class="p-3 text-center">
+                        <input type="number" value="${Math.round(sellingPriceBruto)}" onchange="overrideSimProductPrice('${p.name.replace(/'/g, "\\'")}', '${activeChannel}', this.value)" class="w-32 text-right bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded px-2.5 py-0.5 font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-gold-500">
+                    </td>
+                    <td class="p-3 text-center text-slate-500 dark:text-slate-400 font-bold">${labelDiscountOrMargin}</td>
+                    <td class="p-3 text-right font-bold text-emerald-600 dark:text-emerald-400" title="Neto: ${formatCLP(sellingPriceNeto)}">${formatCLP(netUtilityUnit)}</td>
+                    <td class="p-3 text-center font-bold text-slate-700 dark:text-slate-300">${roiValue.toFixed(0)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // CONTROLADORES DE DRAG & DROP E IA DE GEMINI (OCR FACTURA NEUTRAL)
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('pdf-drag-zone');
+            const fileInput = document.getElementById('pdf-file-input');
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-gold-500', 'bg-gold-50 dark:bg-gold-950/10');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-gold-500', 'bg-gold-50 dark:bg-gold-950/10');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-gold-500', 'bg-gold-50 dark:bg-gold-950/10');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type === "application/pdf") {
+                    parseInvoicePDF(file);
+                } else {
+                    showNotification("Archivo Inválido", "Por favor arrastra un archivo en formato PDF.", "error");
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file && file.type === "application/pdf") {
+                    parseInvoicePDF(file);
+                }
+            });
+        }
+
+        function parseInvoicePDF(file) {
+            document.getElementById('drag-zone-idle').classList.add('hidden');
+            document.getElementById('drag-zone-loading').classList.remove('hidden');
+            
+            const prog = document.getElementById('pdf-progress-bar');
+            prog.style.width = "30%";
+
+            const reader = new FileReader();
+            reader.onload = async function() {
+                try {
+                    const typedarray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+                    let parsedText = "";
+
+                    prog.style.width = "60%";
+                    for (let pNum = 1; pNum <= Math.min(pdf.numPages, 4); pNum++) {
+                        const page = await pdf.getPage(pNum);
+                        const content = await page.getTextContent();
+                        const pageText = content.items.map(item => item.str).join(" ");
+                        parsedText += `\n--- PÁGINA ${pNum} ---\n${pageText}`;
+                    }
+
+                    prog.style.width = "80%";
+                    await enviarTextAGemini(parsedText);
+                } catch (err) {
+                    console.error(err);
+                    showNotification("Error de Lector PDF", "Fallo al procesar el archivo. Cargando datos simulados.", "error");
+                    cargarMockDataPredeterminada();
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function enviarTextAGemini(pdfText) {
+            const apiKey = document.getElementById('gemini-api-key').value;
+
+            if (!apiKey) {
+                setTimeout(() => {
+                    cargarMockDataPredeterminada();
+                    showNotification("Modo de Demostración", "Cargado catálogo de perfumería predeterminado.", "success");
+                }, 1000);
+                return;
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const sysInstruction = `Eres un extractor de datos de facturas comerciales altamente preciso para Cruz & Valencia. 
+            Tu objetivo es leer el texto plano extraído de un PDF de factura de importación internacional de fragancias y transformarlo en un objeto JSON limpio y estructurado. 
+            Debes mapear con total fidelidad los nombres de los productos tal cual aparecen en el texto (sin inventar marcas ni forzar nombres de Carthusia u otra firma), sus cantidades exactas, precios unitarios de compra (FOB/EXW) y la divisa correcta.`;
+            
+            const userPrompt = `Analiza con cuidado el siguiente texto de factura y extrae la información relevante. 
+            Busca patrones de líneas de artículos que contengan descripciones de fragancias, cantidades (unidades) y precios unitarios.
+            
+            Reglas estrictas de análisis:
+            1. Si encuentras un flete internacional listado como ítem, extráelo en "suggestedFlete".
+            2. Si encuentras un seguro de transporte listado, extráelo en "suggestedSeguro".
+            3. Para "products": Extrae cada fragancia o artículo con su nombre original exacto del texto, su cantidad ("qty") y su costo unitario ("price").
+            4. "provider" debe ser la marca o razón social del emisor de la factura encontrada en el texto.
+            5. "currency" debe ser "EUR", "USD" o "CLP" según los símbolos de divisa identificados.
+            
+            Devuelve estrictamente el siguiente esquema JSON (no incluyas texto explicativo adicional fuera del de marcas preconfiguradas):
+            {
+                "provider": "Nombre de la marca o proveedor encontrado",
+                "currency": "EUR" o "USD" o "CLP",
+                "products": [
+                    { "name": "Nombre Real del Producto", "qty": número, "price": número_decimal }
+                ],
+                "suggestedFlete": número_flete_adicional,
+                "suggestedSeguro": número_seguro_adicional
+            }
+            
+            Texto plano de la Factura:
+            ${pdfText}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userPrompt }] }],
+                        systemInstruction: { parts: [{ text: sysInstruction }] },
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                if (!response.ok) throw new Error("Fallo en API de Gemini");
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                const data = JSON.parse(text);
+
+                // Inyectar datos
+                document.getElementById('import-provider').value = data.provider || "Proveedor Extranjero";
+                document.getElementById('import-currency').value = data.currency || "EUR";
+                if (data.suggestedFlete) document.getElementById('cost-flete').value = data.suggestedFlete;
+                if (data.suggestedSeguro) document.getElementById('cost-seguro').value = data.suggestedSeguro;
+                updateCurrencyDefaults();
+
+                if (data.products && data.products.length > 0) {
+                    mixedProducts = data.products;
+                    renderMixedTable();
+                    togglePricingMode(false);
+                } else {
+                    togglePricingMode(true);
+                }
+
+                showNotification("IA Exitosa", "Se extrajeron los artículos de la factura original.", "success");
+            } catch (err) {
+                console.error(err);
+                showNotification("Error de IA", "No se pudo interpretar el archivo mediante IA. Cargando preestablecido.", "error");
+                cargarMockDataPredeterminada();
+            } finally {
+                document.getElementById('drag-zone-idle').classList.remove('hidden');
+                document.getElementById('drag-zone-loading').classList.add('hidden');
+            }
+        }
+
+        function cargarMockDataPredeterminada() {
+            document.getElementById('import-provider').value = "Proveedor de Fragancias Premium";
+            document.getElementById('import-currency').value = "EUR";
+            document.getElementById('import-exchange-rate').value = "1015";
+            document.getElementById('cost-flete').value = "650";
+            document.getElementById('cost-seguro').value = "50";
+            document.getElementById('cost-arancel-pct').value = "0";
+
+            mixedProducts = JSON.parse(JSON.stringify(defaultMixedProducts));
+            renderMixedTable();
+            togglePricingMode(false);
+            calculateImport();
+
+            document.getElementById('drag-zone-idle').classList.remove('hidden');
+            document.getElementById('drag-zone-loading').classList.add('hidden');
+        }
+
+        // CERTIFICADO DE AUDITORÍA PDF
+        function generateAuditPDF() {
+            if (!currentCalculatedState) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const prov = document.getElementById('import-provider').value;
+            const dateStr = new Date().toLocaleString('es-CL');
+
+            doc.setFillColor(18, 20, 22);
+            doc.fillRect(0, 0, 220, 45);
+
+            doc.setTextColor(207, 148, 60);
+            doc.setFont("playfair", "bold");
+            doc.setFontSize(22);
+            doc.text("CRUZ & VALENCIA", 15, 20);
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.text("ALTA PERFUMERÍA • GESTIÓN DE IMPORTACIONES & AUDITORÍA", 15, 28);
+            doc.text(`Fecha: ${dateStr} | Proveedor: ${prov}`, 15, 36);
+
+            doc.setTextColor(50, 50, 50);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("Desglose Financiero de la Operación", 15, 58);
+
+            const dataRows = [
+                ["Total FOB en Origen", formatCLP(currentCalculatedState.fobCLP)],
+                ["Flete Internacional", formatCLP(currentCalculatedState.fleteCLP)],
+                ["Seguro Internacional", formatCLP(currentCalculatedState.seguroCLP)],
+                ["Derecho Aduanero Ad-valorem", formatCLP(currentCalculatedState.arancelCLP)],
+                ["ISP, Despacho y Gastos Locales", formatCLP(currentCalculatedState.totalLocalCLP)],
+                ["Costo Landed Total (Neto)", formatCLP(currentCalculatedState.totalLandedNetoCLP)],
+                ["IVA de Operación (Recuperable)", formatCLP(currentCalculatedState.ivaCLP)],
+                ["Mínimo Flujo de Caja Requerido", formatCLP(currentCalculatedState.totalCajaRequeridaCLP)]
+            ];
+
+            doc.autoTable({
+                startY: 64,
+                head: [["Concepto Logístico / Aduanero", "Valor (CLP)"]],
+                body: dataRows,
+                theme: "striped",
+                headStyles: { fillColor: [163, 95, 26] },
+                styles: { fontSize: 9 }
+            });
+
+            doc.save(`Auditoria_Cruz_Valencia_${prov.replace(/\s+/g, '_')}.pdf`);
+            showNotification("PDF Descargado", "El certificado de aduanas e importación ha sido generado.", "success");
+        }
+
+        // ================== MÓDULO DE SEGUIMIENTO DE PAGOS (TESORERÍA) ==================
+        function updatePaymentsDashboard() {
+            let totalPendiente = 0;
+            let totalPagado = 0;
+            let proximoVenc = null;
+            const hoy = new Date();
+
+            invoices.forEach(inv => {
+                if (inv.status === "Pendiente") {
+                    totalPendiente += inv.amount;
+                    
+                    const fechaVenc = new Date(inv.date);
+                    if (!proximoVenc || fechaVenc < new Date(proximoVenc.date)) {
+                        proximoVenc = inv;
+                    }
+                } else {
+                    totalPagado += inv.amount;
+                }
+            });
+
+            document.getElementById('pagos-kpi-pendiente').innerText = formatCLP(totalPendiente);
+            document.getElementById('pagos-kpi-pagado').innerText = formatCLP(totalPagado);
+
+            const proximoEl = document.getElementById('pagos-kpi-proximo');
+            const proximoFechaEl = document.getElementById('pagos-kpi-proximo-fecha');
+
+            if (proximoVenc) {
+                proximoEl.innerText = proximoVenc.provider;
+                proximoFechaEl.innerText = `Vence el ${proximoVenc.date} (${formatCLP(proximoVenc.amount)})`;
+                proximoFechaEl.className = "text-[10px] text-amber-500 font-bold animate-pulse";
+            } else {
+                proximoEl.innerText = "Sin alertas activas";
+                proximoFechaEl.innerText = "Felicidades, tesorería al día.";
+                proximoFechaEl.className = "text-[10px] text-emerald-500 font-medium";
+            }
+        }
+
+        function filterInvoices(state) {
+            activeInvoiceFilter = state;
+            const btnTodos = document.getElementById('btn-filt-todos');
+            const btnPend = document.getElementById('btn-filt-pendiente');
+            const btnPag = document.getElementById('btn-filt-pagado');
+
+            const inactiveClass = "text-[10px] px-2.5 py-1 rounded font-bold transition-all text-slate-500 dark:text-slate-400";
+            const activeClass = "text-[10px] px-2.5 py-1 rounded font-bold transition-all bg-gold-500 text-white dark:text-slate-950 shadow";
+
+            btnTodos.className = inactiveClass;
+            btnPend.className = inactiveClass;
+            btnPag.className = inactiveClass;
+
+            if (state === 'todos') btnTodos.className = activeClass;
+            else if (state === 'Pendiente') btnPend.className = activeClass;
+            else btnPag.className = activeClass;
+
+            renderInvoicesTable();
+        }
+
+        function renderInvoicesTable() {
+            const tbody = document.getElementById('invoices-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const filtered = invoices.filter(inv => {
+                if (activeInvoiceFilter === 'todos') return true;
+                return inv.status === activeInvoiceFilter;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">No se encontraron facturas en esta categoría.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(inv => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-200 dark:border-slate-850 hover:bg-slate-100/30 dark:hover:bg-slate-900/30 transition-colors text-slate-800 dark:text-slate-300";
+                
+                const badgeStyle = inv.status === "Pagado" 
+                    ? "bg-emerald-100 text-emerald-600 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-500/20" 
+                    : "bg-amber-100 text-amber-600 border border-amber-300 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-500/20";
+
+                tr.innerHTML = `
+                    <td class="p-4 font-semibold text-slate-900 dark:text-slate-100">${inv.provider}</td>
+                    <td class="p-4 text-right font-bold text-slate-900 dark:text-slate-200">${formatCLP(inv.amount)}</td>
+                    <td class="p-4 text-center font-mono text-slate-500 dark:text-slate-400">${inv.date}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeStyle}">${inv.status}</span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <button onclick="dispararNotificacionDual(${inv.id})" class="bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-bold text-[10px] px-3 py-1 rounded-lg shadow-sm hover:brightness-110 transition-all flex items-center justify-center gap-1.5 mx-auto">
+                            <i class="fa-solid fa-paper-plane"></i> Alerta Dual
+                        </button>
+                    </td>
+                    <td class="p-4 text-center space-x-2 whitespace-nowrap">
+                        <button onclick="togglePaidStatus(${inv.id})" class="bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-[10px] px-2 py-1 rounded border border-slate-200 dark:border-slate-800 font-bold transition-all">
+                            ${inv.status === 'Pagado' ? 'Pendiente' : 'Marcar Pago'}
+                        </button>
+                        <button onclick="deleteInvoice(${inv.id})" class="text-slate-400 hover:text-red-500 transition-colors">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function scheduleInvoice() {
+            const prov = document.getElementById('pay-provider').value;
+            const amt = parseFloat(document.getElementById('pay-amount').value);
+            const dt = document.getElementById('pay-date').value;
+
+            if (!prov || isNaN(amt) || !dt) {
+                showNotification("Campos Incompletos", "Por favor ingresa todos los campos para la alerta.", "error");
+                return;
+            }
+
+            invoices.push({
+                id: Date.now(),
+                provider: prov,
+                amount: amt,
+                date: dt,
+                status: "Pendiente"
+            });
+
+            localStorage.setItem('cv_agenda_pagos', JSON.stringify(invoices));
+            renderInvoicesTable();
+            updatePaymentsDashboard();
+            showNotification("Alerta Agendada", "Obligación de pago registrada en la agenda de tesorería.", "success");
+            
+            document.getElementById('pay-provider').value = "";
+            document.getElementById('pay-amount').value = "";
+            document.getElementById('pay-date').value = "";
+        }
+
+        function togglePaidStatus(id) {
+            const inv = invoices.find(i => i.id === id);
+            if (inv) {
+                inv.status = inv.status === "Pagado" ? "Pendiente" : "Pagado";
+                localStorage.setItem('cv_agenda_pagos', JSON.stringify(invoices));
+                renderInvoicesTable();
+                updatePaymentsDashboard();
+                showNotification("Pago Actualizado", `El estado de ${inv.provider} ha sido modificado.`, "success");
+            }
+        }
+
+        function deleteInvoice(id) {
+            if (confirm("¿Deseas remover este registro de pago de la agenda?")) {
+                invoices = invoices.filter(i => i.id !== id);
+                localStorage.setItem('cv_agenda_pagos', JSON.stringify(invoices));
+                renderInvoicesTable();
+                updatePaymentsDashboard();
+                showNotification("Alerta Removida", "Se eliminó el recordatorio.", "info");
+            }
+        }
+
+        // DISPARADOR DE NOTIFICACIÓN DUAL (WHATSAPP + CORREO ELECTRÓNICO EN UN CLIC)
+        function dispararNotificacionDual(id) {
+            const inv = invoices.find(i => i.id === id);
+            if (!inv) return;
+
+            const textAlert = `🚨 *ALERTA DE TESORERÍA - CRUZ & VALENCIA* 🚨\n\nEstimada dirección comercial, se le recuerda que la siguiente obligación requiere liquidación:\n\n*Concepto:* ${inv.provider}\n*Monto:* ${formatCLP(inv.amount)} CLP\n*Vencimiento:* ${inv.date}\n*Estado:* ${inv.status}\n\nPor favor, gestione los flujos de fondos correspondientes para evitar cobros de internación adicionales.`;
+            
+            // 1. WhatsApp Web URL
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(textAlert)}`;
+            
+            // 2. Correo Electrónico URL
+            const mailSubject = `Alerta Financiera de Tesorería - Cruz y Valencia`;
+            const mailBody = `Estimado Equipo,\n\nSe informa que la siguiente factura y obligación financiera se encuentra agendada y pendiente de pago:\n\nConcepto: ${inv.provider}\nMonto Obligación: ${formatCLP(inv.amount)} CLP\nFecha de Vencimiento: ${inv.date}\nEstado Actual: ${inv.status}\n\nPor favor, confirme su recepción y proceda con los flujos de tesorería correspondientes.\n\nAtentamente,\nControl Financiero Cruz & Valencia.`;
+            const mailtoUrl = `mailto:direccion@cruzyvalencia.cl?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
+
+            // Disparar WhatsApp en pestaña nueva
+            window.open(waUrl, '_blank');
+
+            // Disparar Mailto nativo en la pestaña actual (no interrumpe el flujo)
+            setTimeout(() => {
+                window.location.href = mailtoUrl;
+            }, 400);
+
+            showNotification("Flujo de Alerta Dual", "Se abrieron los canales simultáneos de WhatsApp y Correo.", "success");
+        }
+
+        // HISTORIAL DE SIMULACIONES
+        function saveSimulation() {
+            if (!currentCalculatedState) return;
+
+            const prov = document.getElementById('import-provider').value || "Proveedor Extranjero";
+
+            const newEmbarque = {
+                id: Date.now(),
+                date: new Date().toLocaleString('es-CL'),
+                provider: prov,
+                isSingleMode: isSinglePriceMode,
+                totalQty: currentCalculatedState.totalQty,
+                fobCLP: currentCalculatedState.fobCLP,
+                landedNetoCLP: currentCalculatedState.totalLandedNetoCLP,
+                exchangeRate: currentCalculatedState.tc,
+                state: JSON.parse(JSON.stringify(currentCalculatedState)),
+                products: JSON.parse(JSON.stringify(calculatedProducts))
+            };
+
+            savedSimulations.unshift(newEmbarque);
+            localStorage.setItem('cv_historial_embarques', JSON.stringify(savedSimulations));
+            renderHistorialTable();
+            showNotification("Embarque Guardado", "Registro agregado exitosamente a tu historial corporativo.", "success");
+        }
+
+        function renderHistorialTable() {
+            const tbody = document.getElementById('historial-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (savedSimulations.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">No hay embarques guardados en este navegador.</td></tr>`;
+                return;
+            }
+
+            savedSimulations.forEach(sim => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-200 dark:border-slate-850 hover:bg-slate-100/30 dark:hover:bg-slate-900/30 transition-all text-slate-800 dark:text-slate-300';
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-slate-500 dark:text-slate-400">${sim.date}</td>
+                    <td class="p-4 font-bold text-slate-950 dark:text-slate-100">${sim.provider}</td>
+                    <td class="p-4 text-center font-bold">${sim.totalQty}</td>
+                    <td class="p-4 text-right font-semibold">${formatCLP(sim.fobCLP)}</td>
+                    <td class="p-4 text-right font-bold text-gold-600 dark:text-gold-400">${formatCLP(sim.landedNetoCLP)}</td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="cargarEmbarqueHistorial(${sim.id})" class="text-gold-600 dark:text-gold-400 hover:text-gold-500 text-xs font-bold bg-gold-50 dark:bg-gold-950/20 px-2 py-1 rounded border border-gold-400/20">
+                            Cargar
+                        </button>
+                        <button onclick="eliminarEmbarque(${sim.id})" class="text-red-500 hover:text-red-400 text-xs">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cargarEmbarqueHistorial(id) {
+            const sim = savedSimulations.find(s => s.id === id);
+            if (!sim) return;
+
+            if (confirm(`¿Deseas restaurar el embarque de ${sim.provider} del ${sim.date}?`)) {
+                document.getElementById('import-provider').value = sim.provider;
+                document.getElementById('import-currency').value = sim.state.currency;
+                document.getElementById('import-exchange-rate').value = sim.state.tc;
+                document.getElementById('cost-flete').value = sim.state.fleteForeign;
+                document.getElementById('cost-seguro').value = sim.state.seguroForeign;
+                document.getElementById('cost-arancel-pct').value = sim.state.arancelPct;
+
+                document.getElementById('local-isp-insc').value = sim.state.ispInsc;
+                document.getElementById('local-isp-cda').value = sim.state.ispCda;
+                document.getElementById('local-isp-uyd').value = sim.state.ispUyd;
+                document.getElementById('local-agente').value = sim.state.agente;
+                document.getElementById('local-quimico').value = sim.state.quimico;
+                document.getElementById('local-otros').value = sim.state.otros;
+
+                isSinglePriceMode = sim.isSingleMode;
+                if (sim.isSingleMode) {
+                    document.getElementById('single-desc').value = sim.products[0].name;
+                    document.getElementById('single-qty').value = sim.products[0].qty;
+                    document.getElementById('single-unit-fob').value = sim.products[0].priceEXW;
+                    togglePricingMode(true);
+                } else {
+                    mixedProducts = sim.products.map(p => ({
+                        id: Date.now() + Math.random(),
+                        name: p.name,
+                        qty: p.qty,
+                        price: p.priceEXW
+                    }));
+                    renderMixedTable();
+                    togglePricingMode(false);
+                }
+
+                calculateImport();
+                showNotification("Embarque Cargado", "Parámetros restaurados en el Gestor de Importación.", "success");
+            }
+        }
+
+        function eliminarEmbarque(id) {
+            if (confirm("¿Seguro que deseas eliminar este registro histórico?")) {
+                savedSimulations = savedSimulations.filter(s => s.id !== id);
+                localStorage.setItem('cv_historial_embarques', JSON.stringify(savedSimulations));
+                renderHistorialTable();
+                showNotification("Registro Eliminado", "Se removió la simulación histórica.", "info");
+            }
+        }
+
+        function clearAllSimulations() {
+            if (confirm("¿Estás seguro de que deseas vaciar por completo el historial de importaciones? Esta acción no se puede deshacer.")) {
+                savedSimulations = [];
+                localStorage.removeItem('cv_historial_embarques');
+                renderHistorialTable();
+                showNotification("Historial Vaciado", "Se eliminaron todas las simulaciones de la caché local.", "info");
+            }
+        }
+
+        function exportToCSV() {
+            if (!currentCalculatedState) return;
+            let csvContent = "\uFEFF";
+            csvContent += `INFORME DE DISTRIBUCIÓN DE COSTOS - ${document.getElementById('import-provider').value}\r\n`;
+            csvContent += `Fragancia;Cantidad;FOB Unitario;FOB Total CLP;% Prorrateo;Costo Landed Unitario CLP;Costo Landed Total CLP\r\n`;
+
+            calculatedProducts.forEach(p => {
+                const row = [
+                    p.name, p.qty, p.priceEXW, Math.round(p.fobCLP), (p.weight * 100).toFixed(1) + "%", Math.round(p.landedUnit), Math.round(p.landedTotal)
+                ];
+                csvContent += row.join(";") + "\r\n";
+            });
+
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", `Distribucion_Costos_${document.getElementById('import-provider').value}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // CONTROL DE NOTIFICACIONES TOAST PREMIUM
+        function showNotification(title, message, type = "success") {
+            const notif = document.getElementById('notification');
+            const icon = document.getElementById('notification-icon');
+            const titleEl = document.getElementById('notification-title');
+            const msgEl = document.getElementById('notification-message');
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+
+            if (type === "success") {
+                notif.className = "fixed bottom-6 right-6 z-50 bg-white dark:bg-charcoal-900 border border-gold-500 text-slate-800 dark:text-slate-100 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-0";
+                icon.innerHTML = `<i class="fa-solid fa-circle-check text-gold-500 dark:text-gold-400 text-lg"></i>`;
+                titleEl.className = "font-bold text-xs uppercase tracking-wider text-gold-500";
+            } else if (type === "error") {
+                notif.className = "fixed bottom-6 right-6 z-50 bg-white dark:bg-charcoal-900 border border-red-500 text-slate-800 dark:text-slate-100 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-0";
+                icon.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500 dark:text-red-400 text-lg"></i>`;
+                titleEl.className = "font-bold text-xs uppercase tracking-wider text-red-500";
+            } else {
+                notif.className = "fixed bottom-6 right-6 z-50 bg-white dark:bg-charcoal-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-0";
+                icon.innerHTML = `<i class="fa-solid fa-circle-info text-slate-500 dark:text-slate-400 text-lg"></i>`;
+                titleEl.className = "font-bold text-xs uppercase tracking-wider text-slate-500";
+            }
+
+            setTimeout(() => {
+                notif.className = "hidden fixed bottom-6 right-6 z-50 transform translate-y-10 transition-all duration-300";
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
+
